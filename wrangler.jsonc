@@ -6,7 +6,7 @@
   // ctx.exports（网关 → 缓存入口的 loopback）要求 compatibility_date ≥ 2025-11-17。
   "compatibility_flags": ["nodejs_compat"],
 
-  // 不暴露 *.workers.dev，只能用自定义域名访问。
+  // 不暴露 *.workers.dev；自定义域名 / 路由在 Cloudflare Dashboard 里配置。
   "workers_dev": false,
 
   "observability": {
@@ -31,10 +31,6 @@
       "cache": { "enabled": true }
     }
   },
-
-  "routes": [
-    { "pattern": "api.careful.fyi", "custom_domain": true }
-  ],
 
   "kv_namespaces": [
     {

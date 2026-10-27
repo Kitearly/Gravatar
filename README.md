@@ -286,17 +286,12 @@ KV 已经配置好，namespace id 是：
 npm run kv:create
 ```
 
-`wrangler.jsonc` 里已经配置了自定义域名：
+自定义域名不在 `wrangler.jsonc` 里预设。部署后到 Cloudflare Dashboard →
+Workers & Pages → `gravatar` → Settings → Domains & Routes 添加
+`api.careful.fyi`（或你自己的域名）。
 
-```jsonc
-"routes": [
-  { "pattern": "api.careful.fyi", "custom_domain": true }
-]
-```
-
-如果 `api.careful.fyi` 还没有接入当前 Cloudflare 账号，先删掉 `routes`，
-把 `workers_dev` 改成 `true`，部署后用 `*.workers.dev` 验证；域名接好后再改
-回来。
+如果只想先用 `*.workers.dev` 验证，把 `wrangler.jsonc` 里的 `workers_dev`
+改成 `true` 再 deploy；验证完可以改回 `false`。
 
 ### 部署后验证
 
