@@ -1,0 +1,68 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gravatar",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  // ctx.exports（网关 → 缓存入口的 loopback）要求 compatibility_date ≥ 2025-11-17。
+  "compatibility_flags": ["nodejs_compat"],
+
+  // 不暴露 *.workers.dev，只能用自定义域名访问。
+  "workers_dev": false,
+
+  "observability": {
+    "enabled": true
+  },
+
+  // Workers Cache：网关不缓存，被缓存的那一层才进缓存。
+  //
+  // 缓存键由「入口 + 路径/查询串 + Worker 版本」组成，不含 Referer / Origin。
+  // 所以调用方白名单必须放在不缓存的网关入口里 —— 否则未授权的调用方能直接
+  // 拿到缓存图，合法的 403 也会被缓存下来发给所有人。
+  "cache": {
+    "enabled": true
+  },
+  "exports": {
+    "default": {
+      "type": "worker",
+      "cache": { "enabled": false }
+    },
+    "Gravatar": {
+      "type": "worker",
+      "cache": { "enabled": true }
+    }
+  },
+
+  "routes": [
+    { "pattern": "api.careful.fyi", "custom_domain": true }
+  ],
+
+  "kv_namespaces": [
+    {
+      "binding": "GRAVATAR_KV",
+      "id": "0fc90dc67cab469fa4e1a60a3782086c"
+    }
+  ],
+
+  "vars": {
+    // Referer hosts that may use the API. Empty means "no restriction".
+    "HOSTS": "careful.fyi",
+
+    // Set to "1" to allow requests without a Referer header.
+    // 头像经常被邮件客户端或隐私模式引用，这类请求不带 Referer。
+    "ALLOW_EMPTY_REFERER": "1",
+
+    // Edge cache TTL applied to KV reads; also bounds propagation delay.
+    "KV_EDGE_TTL_SECONDS": "3600",
+
+    // Largest avatar payload we are willing to store / serve.
+    "MAX_AVATAR_BYTES": "5242880",
+
+    // Total budget for one upstream request.
+    "FETCH_TIMEOUT_MS": "8000",
+
+    // Set to "1" to route the gateway through the `ctx.exports` loopback so
+    // that Workers Cache serves hot avatars without running this Worker at all.
+    // If Cf-Cache-Status stays MISS on your account, flip it to "0".
+    "WORKERS_CACHE": "1"
+  }
+}
